@@ -1,0 +1,34 @@
+{
+  "name": "express-with-sequelize",
+  "version": "1.0.0",
+  "description": "Node.js Rest Apis with Express, Sequelize & Cloud MySQL.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmit-fsd-2024-s1/s3815261-s3902846-a2.git"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "sequelize",
+    "mysql",
+    "rest",
+    "api"
+  ],
+  "author": "Margaret Xiao, Owen Griffiths",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rmit-fsd-2024-s1/s3815261-s3902846-a2/issues"
+  },
+  "homepage": "https://github.com/rmit-fsd-2024-s1/s3815261-s3902846-a2#readme",
+  "dependencies": {
+    "argon2": "^0.40.1",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.7",
+    "sequelize": "^6.37.3"
+  }
+}

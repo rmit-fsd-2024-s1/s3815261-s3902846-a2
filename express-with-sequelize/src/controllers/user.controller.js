@@ -31,7 +31,7 @@ exports.one = async (req, res) => {
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await db.Users.findOne({ where: { username } });
+    const user = await db.user.findOne({ where: { username } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }

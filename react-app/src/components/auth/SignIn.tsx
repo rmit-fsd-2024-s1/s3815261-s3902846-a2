@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-const SignIn = () => {
+const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // Instantiate useNavigate
+  const navigate = useNavigate();
   const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    signIn(email, password, () => navigate("/profile")); // Pass the navigation callback to signIn
+    await signIn(email, password, () => navigate("/profile"));
   };
 
   return (

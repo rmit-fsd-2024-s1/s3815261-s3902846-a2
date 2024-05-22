@@ -1,4 +1,6 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface FormData {
   username: string;
@@ -16,6 +18,9 @@ const SignUp: React.FC = () => {
   });
 
   const [validationMessage, setValidationMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
+
+  const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
@@ -27,20 +32,18 @@ const SignUp: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-
-    // Reset validation message
+  
     setValidationMessage("");
-
+    setSuccessMessage("");
+  
     const { username, name, email, password } = formData;
-
-    // Validate email
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setValidationMessage("Please enter a valid email address.");
       return;
     }
-
-    // Validate password
+  
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       setValidationMessage(
@@ -48,30 +51,32 @@ const SignUp: React.FC = () => {
       );
       return;
     }
-
+  
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, name, email, password }),
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, {
+        username,
+        name,
+        email,
+        password,
       });
-
-        if (!response.ok) {
-        // Handle error response from backend
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error signing up");
+  
+      if (response.status === 201) {
+        console.log("User signed up successfully");
+        setSuccessMessage("User signed up successfully!");
+  
+        // Display success message for 2 seconds before redirecting
+        setTimeout(() => {
+          // Redirect to profile page upon successful sign-up
+          navigate("/profile");
+        }, 1500); // Delay of 1.5 seconds 
+      } else {
+        setValidationMessage("Error signing up, please try again.");
       }
-
-      // Handle successful sign-up
-      console.log("User signed up successfully");
-      // Optionally, redirect to another page or show a success message to the user
     } catch (error: any) {
-      // Handle sign-up error
       console.error("Error signing up:", error.message);
-      // Display error message to the user
-      setValidationMessage(error.message || "Error signing up");
+      setValidationMessage(
+        error.response?.data?.message || "Account could not be created, please choose a different username or email"
+      );
     }
   };
 
@@ -80,6 +85,11 @@ const SignUp: React.FC = () => {
       {validationMessage && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full" role="alert">
           <p>{validationMessage}</p>
+        </div>
+      )}
+      {successMessage && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full" role="alert">
+          <p>{successMessage}</p>
         </div>
       )}
       <div className="flex flex-col justify-center items-center flex-grow bg-white">

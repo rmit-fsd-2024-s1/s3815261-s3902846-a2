@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import axios from "axios";
 
 export interface User {
   name: string;
@@ -10,10 +11,9 @@ export interface User {
 export interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  users: User[];
   signIn: (email: string, password: string, callback: () => void) => void;
   signOut: () => void;
-  signUp: (username: string, name: string, email: string, password: string) => void; // Updated parameter order
+  signUp: (username: string, name: string, email: string, password: string) => void;
   updateUser: (updates: Partial<User>) => void;
   deleteUser: (email: string) => void;
 }
@@ -21,10 +21,9 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
-  users: [],
   signIn: () => {},
   signOut: () => {},
-  signUp: () => {}, // Updated default value
+  signUp: () => {},
   updateUser: () => {},
   deleteUser: () => {},
 });
@@ -32,93 +31,60 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(() => {
-    const storedUsers = localStorage.getItem("users");
-    return storedUsers ? JSON.parse(storedUsers) : [];
-  });
 
-  useEffect(() => {
-    const storedAuth = localStorage.getItem("isAuthenticated") === "true";
-    const storedUserEmail = localStorage.getItem("currentUser");
-    if (storedAuth && storedUserEmail) {
-      const loggedInUser = users.find((u) => u.email === storedUserEmail);
-      setIsAuthenticated(storedAuth);
-      setUser(loggedInUser || null);
-    }
-  }, [users]);
-
-  const signIn = (email: string, password: string, callback: () => void) => {
-    const foundUser = users.find(
-      (user) => user.email === email && user.password === password
-    );
-    if (foundUser) {
-      setIsAuthenticated(true);
-      setUser(foundUser);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("currentUser", email);
-      alert("Login successful!");
-      callback();
+  const handleError = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.data?.error || error.message);
+      alert(error.response?.data?.error || "An error occurred. Please try again.");
     } else {
-      alert("Invalid credentials");
+      console.error("Unexpected error:", error);
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 
-  const signUp = (username: string, name: string, email: string, password: string) => {
-    const existingUser = users.find((user) => user.email === email);
-    if (existingUser) {
-      alert("Email is already registered. Please use a different email.");
-      return;
+  const signIn = async (email: string, password: string, callback: () => void) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, { email, password });
+      setUser(response.data);
+      setIsAuthenticated(true);
+      callback();
+    } catch (error) {
+      handleError(error);
     }
-
-    const newUser = {
-      username,
-      name,
-      email,
-      password,
-      createdAt: new Date().toISOString(),
-    };
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setIsAuthenticated(true);
-    setUser(newUser);
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("currentUser", email);
   };
 
-  const updateUser = (updates: Partial<User>) => {
+  const signUp = async (username: string, name: string, email: string, password: string) => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, { username, name, email, password });
+      setUser(response.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
-    const index = users.findIndex((u) => u.email === user.email);
-    if (index !== -1) {
-      const updatedUser = { ...users[index], ...updates };
-      const updatedUsers = [
-        ...users.slice(0, index),
-        updatedUser,
-        ...users.slice(index + 1),
-      ];
-      setUsers(updatedUsers);
-
-      if (updates.email && user.email !== updates.email) {
-        localStorage.setItem("currentUser", updates.email);
-      }
-
-      setUser(updatedUser);
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
+    try {
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/users/${user.email}`, updates);
+      setUser(response.data);
+    } catch (error) {
+      handleError(error);
     }
   };
 
-  const deleteUser = (email: string) => {
-    const updatedUsers = users.filter((u) => u.email !== email);
-    if (user?.email === email) {
-      signOut();
+  const deleteUser = async (email: string) => {
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${email}`);
+      if (user?.email === email) {
+        signOut();
+      }
+    } catch (error) {
+      handleError(error);
     }
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
   };
 
   const signOut = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("currentUser");
     setIsAuthenticated(false);
     setUser(null);
   };
@@ -128,7 +94,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         isAuthenticated,
         user,
-        users,
         signIn,
         signOut,
         signUp,

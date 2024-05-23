@@ -1,8 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const productController = require('../controllers/product.controller');
+module.exports = (express, app) => {
+  const controller = require("../controllers/product.controller.js");
+  const router = express.Router();
 
-// get all products
-router.get('/', productController.getAllProducts);
+  // Select all products.
+  router.get("/", controller.all);
 
-module.exports = router;
+  // Create a new product.
+  router.post("/", controller.create);
+
+  // Add routes to server.
+  app.use("/api/product", router);
+};

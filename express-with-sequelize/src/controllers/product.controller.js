@@ -1,9 +1,10 @@
 const db = require("../database");
 
 // Select all products from the database.
-exports.allProducts = async (req, res) => {
+exports.all = async (req, res) => {
   try {
-    const products = await db.Product.findAll();
+
+    const products = await db.product.findAll();
     res.json(products);
   } catch (error) {
     console.error("Error fetching all products:", error);
@@ -11,18 +12,20 @@ exports.allProducts = async (req, res) => {
   }
 };
 
-// Select one product from the database by ID.
-exports.getProductById = async (req, res) => {
-  const productId = req.params.id;
+// Create a product in the database.
+exports.create = async (req, res) => {
   try {
-    const product = await db.Product.findByPk(productId);
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ error: "Product not found" });
-    }
+    const { name, image, price, discount, isOnSpecial } = req.body;
+    const product = await db.product.create({
+      name,
+      image,
+      price,
+      discount,
+      isOnSpecial,
+    });
+    res.status(201).json(product);
   } catch (error) {
-    console.error("Error fetching product:", error);
+    console.error("Error creating product:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

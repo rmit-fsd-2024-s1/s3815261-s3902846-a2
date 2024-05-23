@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     discount: {
-      type: DataTypes.DECIMAL(10, 2), 
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     isOnSpecial: {
@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
   }, {
-    timestamps: true,
+    timestamps: false,
   });
 
   return Product;

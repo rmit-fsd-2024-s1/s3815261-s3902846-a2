@@ -31,10 +31,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   // Adds product to cart or increments quantity if already present
   const addToCart = (product: Product) => {
     setItems((prevItems) => {
-      const itemExists = prevItems.find((item) => item.id === product.id);
+      const itemExists = prevItems.find((item) => item.product_id === product.product_id);
       if (itemExists) {
         return prevItems.map((item) =>
-          item.id === product.id
+          item.product_id === product.product_id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -45,7 +45,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Removes an item from the cart by product ID
   const removeFromCart = (productId: number) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== productId));
+    setItems((prevItems) => prevItems.filter((item) => item.product_id !== productId));
   };
 
   // Clears all items from the cart
@@ -57,7 +57,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     if (quantity > 0) {
       setItems((currentItems) =>
         currentItems.map((item) =>
-          item.id === productId ? { ...item, quantity } : item
+          item.product_id === productId ? { ...item, quantity } : item
         )
       );
     } else {

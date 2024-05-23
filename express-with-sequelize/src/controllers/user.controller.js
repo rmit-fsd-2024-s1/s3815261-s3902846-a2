@@ -51,7 +51,6 @@ exports.login = async (req, res) => {
   }
 };
 
-
 // Create a user in the database.
 exports.create = async (req, res) => {
   const { username, name, email, password } = req.body;
@@ -62,5 +61,29 @@ exports.create = async (req, res) => {
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Update a user identified by the email in the request
+exports.update = async (req, res) => {
+  const id = req.params.id;
+  const { name, email } = req.body;
+
+  try {
+    const user = await db.user.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+
+    await user.save();
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Error updating user" });
   }
 };

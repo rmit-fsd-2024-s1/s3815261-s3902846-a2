@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import axios from "axios";
 
 export interface User {
+  user_id: number; // Ensure your User interface includes user_id
   name: string;
   username: string;
   email: string;
@@ -15,7 +16,7 @@ export interface AuthContextType {
   signIn: (email: string, password: string, callback: () => void) => void;
   signOut: () => void;
   signUp: (username: string, name: string, email: string, password: string) => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<User>) => Promise<void>; // Make it return a promise
   deleteUser: (email: string) => void;
 }
 
@@ -25,7 +26,7 @@ export const AuthContext = createContext<AuthContextType>({
   signIn: () => {},
   signOut: () => {},
   signUp: () => {},
-  updateUser: () => {},
+  updateUser: async () => {},
   deleteUser: () => {},
 });
 
@@ -45,20 +46,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signIn = async (email: string, password: string, callback: () => void) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/login`, { 
-        email, 
-        password 
-      });
-
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/login`, { email, password });
       setUser(response.data);
       setIsAuthenticated(true);
       callback();
     } catch (error) {
-
       handleError(error);
     }
   };
-  
 
   const signUp = async (username: string, name: string, email: string, password: string) => {
     try {
@@ -73,10 +68,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
     try {
-      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/users/${user.email}`, updates);
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/users/${user.user_id}`, updates);
       setUser(response.data);
     } catch (error) {
       handleError(error);
+      throw error; // Propagate error to the caller
     }
   };
 
@@ -119,14 +115,4 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
-
-export const convertISOToDateTime = (isoString: string | number | Date) => {
-  const date = new Date(isoString);
-  const day = ("0" + date.getDate()).slice(-2);
-  const month = ("0" + (date.getMonth() + 1)).slice(-2);
-  const year = date.getFullYear();
-  const hours = ("0" + date.getHours()).slice(-2);
-  const minutes = ("0" + date.getMinutes()).slice(-2);
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
 };

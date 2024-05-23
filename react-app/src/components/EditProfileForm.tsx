@@ -1,5 +1,4 @@
-import { useState, useContext } from "react";
-import { AuthContext, AuthContextType, User } from "../hooks/useAuth";
+import { useState } from "react";
 
 interface EditProfileFormProps {
   user: {
@@ -7,11 +6,7 @@ interface EditProfileFormProps {
     email: string;
     createdAt: string;
   };
-  onSave: (formData: {
-    name?: string;
-    email?: string;
-    createdAt?: string;
-  }) => void;
+  onSave: (formData: { name?: string; email?: string }, callback: () => void) => void;
   onCancel: () => void;
 }
 
@@ -22,7 +17,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
 }) => {
   const [formData, setFormData] = useState(user);
   const [emailError, setEmailError] = useState("");
-  const { users } = useContext(AuthContext) as AuthContextType;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.name === "email") {
@@ -34,16 +28,9 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation: Check if email already exists in the users array, excluding the current user's email
-    const emailExists = users.some(
-      (u: User) => u.email === formData.email && u.email !== user.email
-    );
-    if (emailExists) {
-      setEmailError("This email is already in use by another account.");
-      return;
-    }
-
-    onSave(formData);
+    onSave(formData, () => {
+      setFormData({ ...user, ...formData }); // Update form data with saved data
+    });
   };
 
   return (

@@ -12,6 +12,7 @@ const Profile = () => {
 
   const handleEdit = async (newDetails: { name?: string; email?: string }) => {
     try {
+      //updating user details to new details for profile to display the new values once edit is successful
       await updateUser(newDetails);
       setEditing(false);
       alert("Profile updated successfully.");
@@ -24,7 +25,8 @@ const Profile = () => {
   const handleDelete = async () => {
     if (user && window.confirm("Are you sure you want to delete your profile?")) {
       try {
-        await deleteUser(user.email); // Pass the email to deleteUser
+        //Passing user id to handle deletion of profile
+        await deleteUser(user.user_id); 
         alert("Profile deleted successfully.");
       } catch (error) {
         console.error("Error deleting user:", error);
@@ -32,6 +34,8 @@ const Profile = () => {
       }
     }
   };
+  
+  
 
   return (
     <div className="flex flex-col items-center bg-white p-4 space-y-4">

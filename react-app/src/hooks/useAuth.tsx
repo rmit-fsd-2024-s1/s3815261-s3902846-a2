@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import axios from "axios";
 
 export interface User {
-  user_id: number; // Ensure your User interface includes user_id
+  user_id: number;
   name: string;
   username: string;
   email: string;
@@ -16,8 +16,8 @@ export interface AuthContextType {
   signIn: (email: string, password: string, callback: () => void) => void;
   signOut: () => void;
   signUp: (username: string, name: string, email: string, password: string) => void;
-  updateUser: (updates: Partial<User>) => Promise<void>; // Make it return a promise
-  deleteUser: (email: string) => void;
+  updateUser: (updates: Partial<User>) => Promise<void>;
+  deleteUser: (id: number) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -27,7 +27,7 @@ export const AuthContext = createContext<AuthContextType>({
   signOut: () => {},
   signUp: () => {},
   updateUser: async () => {},
-  deleteUser: () => {},
+  deleteUser: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -44,6 +44,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+
+  //sign in by calling login api in user controller which handles argon2 verify()
   const signIn = async (email: string, password: string, callback: () => void) => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/login`, { email, password });
@@ -65,6 +67,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Update user by id defined in user controller
   const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
     try {
@@ -72,21 +75,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(response.data);
     } catch (error) {
       handleError(error);
-      throw error; // Propagate error to the caller
     }
   };
 
-  const deleteUser = async (email: string) => {
+  // Delete user by id defined in user controller
+  const deleteUser= async (id: number): Promise<void> => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${email}`);
-      if (user?.email === email) {
-        signOut();
-      }
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${id}`);
+      signOut();
     } catch (error) {
       handleError(error);
+      throw error;
     }
   };
 
+  // Function for signing out once user deletion is successful
   const signOut = () => {
     setIsAuthenticated(false);
     setUser(null);

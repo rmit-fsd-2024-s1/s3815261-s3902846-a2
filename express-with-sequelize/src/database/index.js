@@ -11,11 +11,8 @@ db.sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
 
 // Import models.
 db.user = require("./models/user.js")(db.sequelize, DataTypes);
-db.post = require("./models/post.js")(db.sequelize, DataTypes);
 db.product = require("./models/product.js")(db.sequelize, DataTypes);
 
-// Set up relationships.
-// db.post.belongsTo(db.user, { foreignKey: { name: "username", allowNull: false } });
 
 // Synchronize database.
 db.sync = async () => {
@@ -27,13 +24,12 @@ async function seedData() {
   const count = await db.user.count();
   if (count > 0) return;
 
+  // Test profile
   const argon2 = require("argon2");
-  let hash = await argon2.hash("abc123", { type: argon2.argon2id });
-  await db.user.create({ username: "mbolger", password_hash: hash, name: "Matthew Bolger", email: "abcde@test.com.au" });
+  let hash = await argon2.hash("test", { type: argon2.argon2id });
+  await db.user.create({ username: "test", password_hash: hash, name: "Test Tester", email: "test@gmail.com" });
 
-  hash = await argon2.hash("def456", { type: argon2.argon2id });
-  await db.user.create({ username: "shekhar", password_hash: hash, name: "Shekhar Kalra", email: "abcde2@test.com.au" });
-
+  // Creating all the products into database
   await db.product.create({
     name: "Tomatoes",
     image: "https://images.unsplash.com/photo-1553395572-0ef353a212bf?q=80&w=3315&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",

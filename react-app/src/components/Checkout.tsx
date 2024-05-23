@@ -45,7 +45,7 @@ const Checkout: React.FC = () => {
         {items.length > 0 ? (
           items.map((item) => (
             <div
-              key={item.id}
+              key={item.product_id}
               className="flex items-center justify-between p-4 bg-white shadow rounded-lg"
             >
               <div className="flex items-center">
@@ -63,7 +63,7 @@ const Checkout: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <button
-                  onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                  onClick={() => updateItemQuantity(item.product_id, item.quantity - 1)}
                   className="text-lg px-3 py-1 border rounded-l focus:outline-none focus:ring disabled:bg-gray-200"
                   disabled={item.quantity <= 1}
                 >
@@ -73,7 +73,7 @@ const Checkout: React.FC = () => {
                   {item.quantity}
                 </span>
                 <button
-                  onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
+                  onClick={() => updateItemQuantity(item.product_id, item.quantity + 1)}
                   className="text-lg px-3 py-1 border rounded-r focus:outline-none focus:ring"
                 >
                   +
@@ -83,7 +83,7 @@ const Checkout: React.FC = () => {
                 ${(item.price * item.quantity).toFixed(2)}
               </span>
               <button
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => removeFromCart(item.product_id)}
                 className="text-xs text-red-500 hover:text-red-600"
               >
                 Remove

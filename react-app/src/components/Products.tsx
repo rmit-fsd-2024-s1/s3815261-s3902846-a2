@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
+import axios from "axios";
 
 export interface Product {
-  id: number;
+  product_id: number;
   name: string;
   image: string;
   price: number;
@@ -13,13 +14,20 @@ export interface Product {
 
 const ProductsComponent: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const { addToCart } = useCart(); // Use the addToCart function from the hook
-  const { isAuthenticated } = useAuth(); // Use isAuthenticated to determine if the user is logged in
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Fetch all products from localStorage
-    const storedProducts = JSON.parse(localStorage.getItem("products") || "[]");
-    setProducts(storedProducts);
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`);
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   return (
@@ -29,7 +37,7 @@ const ProductsComponent: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product.product_id}
               className="bg-white rounded-lg shadow-md flex flex-col"
             >
               <img
@@ -56,7 +64,6 @@ const ProductsComponent: React.FC = () => {
                       )}`}</span>
                     )}
                   </p>
-                  {/* Add an empty space if the product is not on special to align the buttons */}
                   {!product.isOnSpecial && <div className="h-6"></div>}
                 </div>
                 {isAuthenticated && (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { convertISOToDateTime } from "../hooks/useAuth";
 import EditProfileForm from "./EditProfileForm";
@@ -33,6 +33,10 @@ const Profile = () => {
   return (
     <div className="flex flex-col items-center bg-white p-4 space-y-4">
       <h2 className="text-2xl font-bold mb-6">Profile Page</h2>
+      {/* Welcome message */}
+      <div className="text-xl font-semibold mb-4">
+        Welcome, {user?.username}!
+      </div>
       {!editing ? (
         <div className="w-full max-w-xl bg-gray-100 p-4 rounded-lg shadow">
           <div className="border-b border-gray-300 pb-4">

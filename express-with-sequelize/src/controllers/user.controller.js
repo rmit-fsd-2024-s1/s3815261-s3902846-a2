@@ -4,7 +4,7 @@ const argon2 = require("argon2");
 // Select all users from the database.
 exports.all = async (req, res) => {
   try {
-    const users = await db.Users.findAll();
+    const users = await db.user.findAll();
     res.json(users);
   } catch (error) {
     console.error("Error fetching all users:", error);
@@ -15,7 +15,7 @@ exports.all = async (req, res) => {
 // Select one user from the database.
 exports.one = async (req, res) => {
   try {
-    const user = await db.Users.findByPk(req.params.id);
+    const user = await db.user.findByPk(req.params.id);
     if (user) {
       res.json(user);
     } else {
@@ -27,18 +27,21 @@ exports.one = async (req, res) => {
   }
 };
 
-// Select one user from the database if username and password are a match.
+// Select one user from the database if email and password are a match.
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const user = await db.user.findOne({ where: { username } });
+    // Selecting from database where email = inputted email/checking if email exists
+    const user = await db.user.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // Verifying plaintext with password hash stored in database
     const isPasswordValid = await argon2.verify(user.password_hash, password);
+
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid username or password" });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     res.json(user);
@@ -47,6 +50,7 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // Create a user in the database.
 exports.create = async (req, res) => {

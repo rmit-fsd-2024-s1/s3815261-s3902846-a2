@@ -3,6 +3,7 @@ import axios from "axios";
 
 export interface User {
   name: string;
+  username: string;
   email: string;
   password: string;
   createdAt: string;
@@ -44,14 +45,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signIn = async (email: string, password: string, callback: () => void) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, { email, password });
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/login`, { 
+        email, 
+        password 
+      });
+
       setUser(response.data);
       setIsAuthenticated(true);
       callback();
     } catch (error) {
+
       handleError(error);
     }
   };
+  
 
   const signUp = async (username: string, name: string, email: string, password: string) => {
     try {

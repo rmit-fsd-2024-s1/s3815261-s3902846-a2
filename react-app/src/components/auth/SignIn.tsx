@@ -7,14 +7,44 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { signIn } = useAuth();
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn(email, password, () => navigate("/profile"));
+    // Check if email and password are not empty strings
+    if (!email.trim() || !password.trim()) {
+      console.error("Email and password must not be empty");
+      // Handle the empty fields error, such as displaying an error message to the user
+      return;
+    }
+    try {
+      await signIn(
+        email,
+        password,
+        () => {
+          // Set login success state to true
+          setLoginSuccess(true);
+          // After 1.5 seconds, navigate to the profile page
+          setTimeout(() => {
+            navigate("/profile");
+          }, 1500);
+        }
+      );
+    } catch (error: any) {
+      console.error("Error signing in:", error.message);
+
+      setLoginSuccess(false); // Reset login success state on failure
+    }
   };
 
   return (
     <div className="flex flex-col justify-center items-center flex-grow bg-white">
+      {/* Show login success message if login is successful */}
+      {loginSuccess && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full" role="alert">
+          <p>Login successful!</p>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className="bg-gray-100 shadow-2xl rounded-lg px-12 pt-10 pb-12 mb-4 max-w-2xl w-full"

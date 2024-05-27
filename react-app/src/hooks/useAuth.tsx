@@ -15,7 +15,12 @@ export interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string, callback: () => void) => void;
   signOut: () => void;
-  signUp: (username: string, name: string, email: string, password: string) => void;
+  signUp: (
+    username: string,
+    name: string,
+    email: string,
+    password: string
+  ) => void;
   updateUser: (updates: Partial<User>) => Promise<void>;
   deleteUser: (id: number) => Promise<void>;
 }
@@ -30,25 +35,37 @@ export const AuthContext = createContext<AuthContextType>({
   deleteUser: async () => {},
 });
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
 
   const handleError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
-      console.error("Axios error:", error.response?.data?.error || error.message);
-      alert(error.response?.data?.error || "An error occurred. Please try again.");
+      console.error(
+        "Axios error:",
+        error.response?.data?.message || error.message
+      );
+      alert(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
     } else {
       console.error("Unexpected error:", error);
       alert("An unexpected error occurred. Please try again.");
     }
   };
 
-
-  //sign in by calling login api in user controller which handles argon2 verify()
-  const signIn = async (email: string, password: string, callback: () => void) => {
+  const signIn = async (
+    email: string,
+    password: string,
+    callback: () => void
+  ) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/login`, { email, password });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/login`,
+        { email, password }
+      );
       setUser(response.data);
       setIsAuthenticated(true);
       callback();
@@ -57,9 +74,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const signUp = async (username: string, name: string, email: string, password: string) => {
+  const signUp = async (
+    username: string,
+    name: string,
+    email: string,
+    password: string
+  ) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, { username, name, email, password });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users`,
+        { username, name, email, password }
+      );
       setUser(response.data);
       setIsAuthenticated(true);
     } catch (error) {
@@ -67,19 +92,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Update user by id defined in user controller
   const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
     try {
-      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/users/${user.user_id}`, updates);
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/users/${user.user_id}`,
+        updates
+      );
       setUser(response.data);
     } catch (error) {
       handleError(error);
+      throw error; // Re-throw error so it can be caught in the form component
     }
   };
 
-  // Delete user by id defined in user controller
-  const deleteUser= async (id: number): Promise<void> => {
+  const deleteUser = async (id: number): Promise<void> => {
     try {
       await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/${id}`);
       signOut();
@@ -89,7 +116,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Function for signing out once user deletion is successful
   const signOut = () => {
     setIsAuthenticated(false);
     setUser(null);

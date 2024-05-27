@@ -56,7 +56,12 @@ exports.create = async (req, res) => {
   const { username, name, email, password } = req.body;
   try {
     const hash = await argon2.hash(password, { type: argon2.argon2id });
-    const user = await db.user.create({ username, name, email, password_hash: hash });
+    const user = await db.user.create({
+      username,
+      name,
+      email,
+      password_hash: hash,
+    });
     res.status(201).json(user);
   } catch (error) {
     console.error("Error creating user:", error);
@@ -74,6 +79,14 @@ exports.update = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the new email is already taken by another user
+    if (email) {
+      const existingUser = await db.user.findOne({ where: { email } });
+      if (existingUser && existingUser.user_id !== parseInt(id)) {
+        return res.status(400).json({ message: "Email is already taken" });
+      }
     }
 
     user.name = name || user.name;

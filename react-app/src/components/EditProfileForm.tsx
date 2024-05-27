@@ -1,4 +1,6 @@
+import axios from "axios";
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth"; // Ensure correct path
 
 interface EditProfileFormProps {
   user: {
@@ -6,7 +8,10 @@ interface EditProfileFormProps {
     email: string;
     createdAt: string;
   };
-  onSave: (formData: { name?: string; email?: string }, callback: () => void) => void;
+  onSave: (
+    formData: { name?: string; email?: string },
+    callback: () => void
+  ) => void;
   onCancel: () => void;
 }
 
@@ -15,6 +20,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  const { updateUser } = useAuth();
   const [formData, setFormData] = useState(user);
   const [emailError, setEmailError] = useState("");
 
@@ -25,12 +31,28 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    onSave(formData, () => {
-      setFormData({ ...user, ...formData }); // Update form data with saved data
-    });
+    try {
+      await updateUser(formData); // Use updateUser from the AuthContext
+      onSave(formData, () => {
+        setFormData({ ...user, ...formData }); // Update form data with saved data
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data?.message === "Email is already taken") {
+          setEmailError("Email is already taken");
+        } else {
+          alert(
+            error.response?.data?.message ||
+              "An error occurred. Please try again."
+          );
+        }
+      } else {
+        alert("An unexpected error occurred. Please try again.");
+      }
+    }
   };
 
   return (

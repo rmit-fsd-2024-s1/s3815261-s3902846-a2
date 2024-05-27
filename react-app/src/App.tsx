@@ -9,7 +9,6 @@ import SignUp from "./components/auth/SignUp";
 import SignIn from "./components/auth/SignIn";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./utils/ProtectedRoute";
-import FarmingInformation from "./components/layout/FarmingInformation";
 import ProductsComponent from "./components/Products";
 import Checkout from "./components/Checkout"; // Make sure to import your Checkout component
 
@@ -23,7 +22,6 @@ const App: React.FC = () => {
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/farming" element={<FarmingInformation />} />
                 <Route path="/products" element={<ProductsComponent />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/signin" element={<SignIn />} />

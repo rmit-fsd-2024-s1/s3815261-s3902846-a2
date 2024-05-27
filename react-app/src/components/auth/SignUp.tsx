@@ -7,6 +7,7 @@ interface FormData {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 const SignUp: React.FC = () => {
@@ -15,6 +16,7 @@ const SignUp: React.FC = () => {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [validationMessage, setValidationMessage] = useState<string>("");
@@ -32,50 +34,60 @@ const SignUp: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-  
+
     setValidationMessage("");
     setSuccessMessage("");
-  
-    const { username, name, email, password } = formData;
-  
+
+    const { username, name, email, password, confirmPassword } = formData;
+
+    if (password !== confirmPassword) {
+      setValidationMessage("Passwords do not match.");
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setValidationMessage("Please enter a valid email address.");
       return;
     }
-  
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       setValidationMessage(
         "Password must be at least 8 characters long, include a mix of upper and lower case letters, numbers, and special characters."
       );
       return;
     }
-  
+
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, {
-        username,
-        name,
-        email,
-        password,
-      });
-  
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users`,
+        {
+          username,
+          name,
+          email,
+          password,
+        }
+      );
+
       if (response.status === 201) {
         console.log("User signed up successfully");
         setSuccessMessage("User signed up successfully!");
-  
+
         // Display success message for 2 seconds before redirecting
         setTimeout(() => {
           // Redirect to profile page upon successful sign-up
           navigate("/profile");
-        }, 1500); // Delay of 1.5 seconds 
+        }, 1500); // Delay of 1.5 seconds
       } else {
         setValidationMessage("Error signing up, please try again.");
       }
     } catch (error: any) {
       console.error("Error signing up:", error.message);
       setValidationMessage(
-        error.response?.data?.message || "Account could not be created, please choose a different username or email"
+        error.response?.data?.message ||
+          "Account could not be created, please choose a different username or email"
       );
     }
   };
@@ -83,12 +95,18 @@ const SignUp: React.FC = () => {
   return (
     <div className="flex flex-col justify-center items-center flex-grow bg-white">
       {validationMessage && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full" role="alert">
+        <div
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full"
+          role="alert"
+        >
           <p>{validationMessage}</p>
         </div>
       )}
       {successMessage && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full" role="alert">
+        <div
+          className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full"
+          role="alert"
+        >
           <p>{successMessage}</p>
         </div>
       )}
@@ -98,7 +116,10 @@ const SignUp: React.FC = () => {
           className="bg-gray-100 shadow-2xl rounded-lg px-12 pt-10 pb-12 mb-4 max-w-2xl w-full"
         >
           <div className="mb-6">
-            <label className="block text-gray-800 text-lg font-bold mb-2" htmlFor="username">
+            <label
+              className="block text-gray-800 text-lg font-bold mb-2"
+              htmlFor="username"
+            >
               Username
             </label>
             <input
@@ -113,7 +134,10 @@ const SignUp: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-800 text-lg font-bold mb-2" htmlFor="name">
+            <label
+              className="block text-gray-800 text-lg font-bold mb-2"
+              htmlFor="name"
+            >
               Name
             </label>
             <input
@@ -128,7 +152,10 @@ const SignUp: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-800 text-lg font-bold mb-2" htmlFor="email">
+            <label
+              className="block text-gray-800 text-lg font-bold mb-2"
+              htmlFor="email"
+            >
               Email
             </label>
             <input
@@ -142,8 +169,11 @@ const SignUp: React.FC = () => {
               required
             />
           </div>
-          <div className="mb-8">
-            <label className="block text-gray-800 text-lg font-bold mb-2" htmlFor="password">
+          <div className="mb-6">
+            <label
+              className="block text-gray-800 text-lg font-bold mb-2"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
@@ -154,6 +184,24 @@ const SignUp: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter a secure password"
+              required
+            />
+          </div>
+          <div className="mb-8">
+            <label
+              className="block text-gray-800 text-lg font-bold mb-2"
+              htmlFor="confirmPassword"
+            >
+              Confirm Password
+            </label>
+            <input
+              className="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:border-green-600"
+              id="confirmPassword"
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm your password"
               required
             />
           </div>

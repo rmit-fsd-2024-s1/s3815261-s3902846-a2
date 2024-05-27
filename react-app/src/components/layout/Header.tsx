@@ -23,12 +23,6 @@ const Header: React.FC = () => {
         </h1>
         <nav className="flex items-center gap-2">
           <Link
-            to="/farming"
-            className="bg-white text-green-500 px-3 py-1 rounded-lg shadow font-medium"
-          >
-            Farming Information
-          </Link>
-          <Link
             to="/products"
             className="bg-white text-green-500 px-3 py-1 rounded-lg shadow font-medium"
           >

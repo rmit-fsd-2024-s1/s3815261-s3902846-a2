@@ -5,6 +5,9 @@ module.exports = (express, app) => {
   // Select all products.
   router.get("/", controller.all);
 
+  // Select products that are on special.
+  router.get("/specials", controller.specials);
+
   // Create a new product.
   router.post("/", controller.create);
 

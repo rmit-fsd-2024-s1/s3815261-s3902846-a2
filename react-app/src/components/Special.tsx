@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 export interface Product {
-  id: number;
+  product_id: number;
   name: string;
   image: string;
-  price: number;
-  discount: number;
+  price: string;
+  discount: string;
   isOnSpecial: boolean;
 }
 
@@ -13,30 +14,33 @@ const Special: React.FC = () => {
   const [specialProducts, setSpecialProducts] = useState<Product[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Fetch and filter products on special from localStorage when component mounts
   useEffect(() => {
-    const products = JSON.parse(localStorage.getItem("products") || "[]");
-    const onSpecialProducts = products.filter(
-      (product: Product) => product.isOnSpecial
-    );
-    setSpecialProducts(onSpecialProducts);
+    const fetchSpecialProducts = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/product/specials`
+        );
+        setSpecialProducts(response.data);
+      } catch (error) {
+        console.error("Error fetching special products:", error);
+      }
+    };
+
+    fetchSpecialProducts();
   }, []);
 
-  // Function to navigate to the previous special product
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex > 0 ? prevIndex - 1 : specialProducts.length - 1
     );
   };
 
-  // Function to navigate to the next special product
   const goToNext = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex < specialProducts.length - 1 ? prevIndex + 1 : 0
     );
   };
 
-  // Render the carousel of special products with navigation buttons
   return (
     <div className="relative flex justify-center items-center my-8">
       <button
@@ -53,7 +57,7 @@ const Special: React.FC = () => {
         >
           {specialProducts.map((product, _index) => (
             <div
-              key={product.id}
+              key={product.product_id}
               className="inline-flex justify-center w-full"
               style={{ minWidth: "100%" }}
             >
@@ -65,11 +69,11 @@ const Special: React.FC = () => {
                 />
                 <div className="mt-4">
                   <h3 className="text-lg font-semibold">{product.name}</h3>
-                  <p className="text-gray-600">{`Was $${product.price.toFixed(
-                    2
-                  )}`}</p>
+                  <p className="text-gray-600">{`Was $${parseFloat(
+                    product.price
+                  ).toFixed(2)}`}</p>
                   <p className="text-lg text-green-600 font-semibold">{`Now $${(
-                    product.price - product.discount
+                    parseFloat(product.price) - parseFloat(product.discount)
                   ).toFixed(2)}`}</p>
                 </div>
               </div>

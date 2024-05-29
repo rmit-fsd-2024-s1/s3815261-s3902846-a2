@@ -14,6 +14,7 @@ db.User = require("./models/user.js")(db.sequelize, DataTypes);
 db.Product = require("./models/Product.js")(db.sequelize, DataTypes);
 db.Cart = require("./models/cart.js")(db.sequelize, DataTypes);
 db.CartItem = require("./models/CartItem.js")(db.sequelize, DataTypes);
+db.Review = require("./models/review.js")(db.sequelize, DataTypes);
 
 // Define associations.
 db.User.hasOne(db.Cart, { foreignKey: "user_id" });
@@ -24,6 +25,9 @@ db.CartItem.belongsTo(db.Cart, { foreignKey: "cart_id" });
 
 db.CartItem.belongsTo(db.Product, { foreignKey: "Product_id" });
 db.Product.hasMany(db.CartItem, { foreignKey: "Product_id" });
+
+db.Review.belongsTo(db.User, { foreignKey: "user_id" });
+db.Review.belongsTo(db.Product, { foreignKey: "product_id" });
 
 // Synchronize database.
 db.sync = async () => {

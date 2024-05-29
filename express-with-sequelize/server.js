@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
 require("./src/routes/user.routes.js")(express, app);
 require("./src/routes/product.routes.js")(express, app);
 require("./src/routes/carts.routes.js")(express, app);
+require("./src/routes/review.routes.js")(express, app);
 
 // Set port, listen for requests.
 const PORT = 5000;

@@ -8,10 +8,11 @@ const Header: React.FC = () => {
   const { isAuthenticated, signOut } = useAuth();
   const { items } = useCart();
 
-  const itemCount = items.reduce(
-    (total: number, item: CartItem) => total + item.quantity,
-    0
-  );
+  const itemCount =
+    items?.reduce(
+      (total: number, item: CartItem) => total + item.quantity,
+      0
+    ) ?? 0;
 
   return (
     <header className="bg-green-500 text-white py-3 px-5">

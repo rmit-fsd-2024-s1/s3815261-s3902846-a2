@@ -52,22 +52,12 @@ const Products: React.FC = () => {
                 <h3 className="text-center font-semibold">{product.name}</h3>
                 <div>
                   <p className="text-center">
-                    {/* Not sure why, but it detects price as a string (though defined as number) so I've used unary plus to convert it for discount calculations */}
-                    {typeof product.price === "string" ? (
-                      <>
-                        {/* Convert string to number using unary plus (+) */}
-                        <span className="font-bold text-red-500">{`$${(
-                          +product.price - +product.discount
-                        ).toFixed(2)}`}</span>
-                        {/* Convert string to number using unary plus (+) */}
-                        <span className="block text-sm text-gray-500">{`Was $${(+product.price).toFixed(
-                          2
-                        )}`}</span>
-                      </>
-                    ) : (
-                      // For pricing issue test
-                      <span className="font-bold">Price not available</span>
-                    )}
+                    <span className="font-bold text-red-500">{`$${(
+                      Number(product.price) - Number(product.discount)
+                    ).toFixed(2)}`}</span>
+                    <span className="block text-sm text-gray-500">{`Was $${Number(
+                      product.price
+                    ).toFixed(2)}`}</span>
                   </p>
                   {!product.isOnSpecial && <div className="h-6"></div>}
                 </div>

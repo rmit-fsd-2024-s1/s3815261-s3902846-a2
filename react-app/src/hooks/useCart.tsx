@@ -1,8 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Product } from "../utils/Products";
+import axios from "axios";
+import { useAuth } from "./useAuth";
 
-export interface CartItem extends Product {
+export interface CartItem {
+  product_id: number;
+  name: string;
+  image: string;
+  price: number;
   quantity: number;
+}
+
+export interface Product {
+  product_id: number;
+  name: string;
+  image: string;
+  price: number;
+  discount: number;
+  isOnSpecial: boolean;
 }
 
 interface CartContextType {
@@ -18,48 +32,109 @@ const CartContext = createContext<CartContextType | null>(null);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    const storedCart = localStorage.getItem("cart");
-    return storedCart ? JSON.parse(storedCart) : [];
-  });
+  const { user } = useAuth();
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  const getUserFromLocalStorage = () => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  };
 
   useEffect(() => {
-    // Save cart items to local storage whenever they change
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
+    // Fetch cart items from the API when the component mounts
+    const fetchCart = async () => {
+      const currentUser = user || getUserFromLocalStorage();
+      if (currentUser) {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/cart/${currentUser.user_id}`
+          );
+          setItems(response.data.CartItems || []);
+        } catch (error) {
+          console.error("Error fetching cart items:", error);
+        }
+      }
+    };
+
+    fetchCart();
+  }, [user]);
+
+  const handleError = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        "Axios error:",
+        error.response?.data?.message || error.message
+      );
+      alert(
+        error.response?.data?.message || "An error occurred. Please try again."
+      );
+    } else {
+      console.error("Unexpected error:", error);
+      alert("An unexpected error occurred. Please try again.");
+    }
+  };
 
   // Adds product to cart or increments quantity if already present
-  const addToCart = (product: Product) => {
-    setItems((prevItems) => {
-      const itemExists = prevItems.find((item) => item.product_id === product.product_id);
-      if (itemExists) {
-        return prevItems.map((item) =>
-          item.product_id === product.product_id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+  const addToCart = async (product: Product) => {
+    const currentUser = user || getUserFromLocalStorage();
+    if (!currentUser) return;
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/cart/add`, {
+        user_id: currentUser.user_id,
+        product_id: product.product_id,
+        quantity: 1,
+      });
+      setItems((prevItems) => {
+        if (!prevItems) prevItems = [];
+        const itemExists = prevItems.find(
+          (item) => item.product_id === product.product_id
         );
-      }
-      return [...prevItems, { ...product, quantity: 1 }];
-    });
+        if (itemExists) {
+          return prevItems.map((item) =>
+            item.product_id === product.product_id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        }
+        return [...prevItems, { ...product, quantity: 1 }];
+      });
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   // Removes an item from the cart by product ID
-  const removeFromCart = (productId: number) => {
-    setItems((prevItems) => prevItems.filter((item) => item.product_id !== productId));
+  const removeFromCart = async (productId: number) => {
+    const currentUser = user || getUserFromLocalStorage();
+    if (!currentUser) return;
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/cart/remove/${productId}`
+      );
+      setItems((prevItems) =>
+        prevItems
+          ? prevItems.filter((item) => item.product_id !== productId)
+          : []
+      );
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   // Clears all items from the cart
   const clearCart = () => {
     setItems([]);
+    // Optional: Implement API call to clear cart items
   };
 
-  const updateItemQuantity = (productId: number, quantity: number) => {
+  const updateItemQuantity = async (productId: number, quantity: number) => {
     if (quantity > 0) {
       setItems((currentItems) =>
         currentItems.map((item) =>
           item.product_id === productId ? { ...item, quantity } : item
         )
       );
+      // Optional: Implement API call to update item quantity
     } else {
       removeFromCart(productId);
     }

@@ -7,18 +7,17 @@ const Checkout: React.FC = () => {
   const [expiryDate, setExpiryDate] = useState("");
 
   const total = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (acc, item) => acc + Number(item.price) * item.quantity,
     0
-  ); // Calculate total price
+  );
 
   const validateCard = () => {
-    // Visa card numbers start with a '4' and have 16 digits
     const regexCardNumber = /^4[0-9]{15}$/;
-    const regexExpiryDate = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/; // MM/YY format
+    const regexExpiryDate = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
 
     const isCardNumberValid = regexCardNumber.test(
       cardNumber.replace(/\s+/g, "")
-    ); // Removes spaces and checks against regex
+    );
     const isExpiryDateValid = regexExpiryDate.test(expiryDate);
 
     return isCardNumberValid && isExpiryDateValid;
@@ -26,9 +25,8 @@ const Checkout: React.FC = () => {
 
   const handleCheckout = () => {
     if (validateCard()) {
-      alert(`Payment successful! Total: $${total.toFixed(2)}`); // Show total in alert
+      alert(`Payment successful! Total: $${total.toFixed(2)}`);
       clearCart();
-      // Reset the card details inputs
       setCardNumber("");
       setExpiryDate("");
     } else {
@@ -57,13 +55,15 @@ const Checkout: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold">{item.name}</h3>
                   <p className="text-sm text-gray-600">
-                    ${item.price.toFixed(2)} each
+                    ${Number(item.price).toFixed(2)} each
                   </p>
                 </div>
               </div>
               <div className="flex items-center">
                 <button
-                  onClick={() => updateItemQuantity(item.product_id, item.quantity - 1)}
+                  onClick={() =>
+                    updateItemQuantity(item.product_id, item.quantity - 1)
+                  }
                   className="text-lg px-3 py-1 border rounded-l focus:outline-none focus:ring disabled:bg-gray-200"
                   disabled={item.quantity <= 1}
                 >
@@ -73,14 +73,16 @@ const Checkout: React.FC = () => {
                   {item.quantity}
                 </span>
                 <button
-                  onClick={() => updateItemQuantity(item.product_id, item.quantity + 1)}
+                  onClick={() =>
+                    updateItemQuantity(item.product_id, item.quantity + 1)
+                  }
                   className="text-lg px-3 py-1 border rounded-r focus:outline-none focus:ring"
                 >
                   +
                 </button>
               </div>
               <span className="font-semibold">
-                ${(item.price * item.quantity).toFixed(2)}
+                ${(Number(item.price) * item.quantity).toFixed(2)}
               </span>
               <button
                 onClick={() => removeFromCart(item.product_id)}

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import axios from "axios";
 
 export interface User {
@@ -41,6 +47,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   const handleError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
       console.error(
@@ -68,6 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       );
       setUser(response.data);
       setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(response.data));
       callback();
     } catch (error) {
       handleError(error);
@@ -87,6 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       );
       setUser(response.data);
       setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
       handleError(error);
     }
@@ -100,6 +116,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         updates
       );
       setUser(response.data);
+      localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
       handleError(error);
       throw error; // Re-throw error so it can be caught in the form component
@@ -119,6 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signOut = () => {
     setIsAuthenticated(false);
     setUser(null);
+    localStorage.removeItem("user");
   };
 
   return (

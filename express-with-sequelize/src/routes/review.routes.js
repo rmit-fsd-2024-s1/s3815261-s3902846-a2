@@ -14,5 +14,8 @@ module.exports = (express, app) => {
   // Delete a review
   router.delete("/review/:reviewId", reviewController.deleteReview);
 
+  // Get all reviews for all products
+  router.get("/reviews", reviewController.getAllReviews);
+
   app.use("/api", router);
 };

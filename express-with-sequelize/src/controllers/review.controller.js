@@ -21,6 +21,12 @@ exports.getReviewsByProduct = async (req, res) => {
     const { productId } = req.params;
     const reviews = await db.Review.findAll({
       where: { product_id: productId },
+      include: [
+        {
+          model: db.User,
+          attributes: ["username"], // Include only the username attribute
+        },
+      ],
     });
     res.status(200).json(reviews);
   } catch (error) {
@@ -58,6 +64,18 @@ exports.deleteReview = async (req, res) => {
     res.status(200).json({ message: "Review deleted" });
   } catch (error) {
     console.error("Error deleting review:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.getAllReviews = async (req, res) => {
+  try {
+    const reviews = await db.Review.findAll({
+      include: [{ model: db.User, attributes: ["username"] }],
+    });
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

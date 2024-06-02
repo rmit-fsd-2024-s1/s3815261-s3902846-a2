@@ -11,6 +11,9 @@ module.exports = (express, app) => {
   // Create a new product.
   router.post("/", controller.create);
 
+  // Get a single product by ID
+  router.get("/:productId", controller.getProductById);
+
   // Add routes to server.
   app.use("/api/product", router);
 };

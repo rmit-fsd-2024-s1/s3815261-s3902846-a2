@@ -110,3 +110,4 @@ This will execute the test suite for the React application.
 - The backend server runs on `http://localhost:5000` by default.
 - The frontend development server runs on `http://localhost:5173` by default.
 - Ensure that the backend server is running before starting the frontend development server to avoid any connectivity issues.
+- Entity Relationship Diagram PDF has been placed in express-with-sequelize folder.

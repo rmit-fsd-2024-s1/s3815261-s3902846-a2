@@ -3,6 +3,7 @@ import axios from "axios";
 import { useAuth } from "./useAuth";
 
 export interface CartItem {
+  cart_item_id: number;
   product_id: number;
   name: string;
   image: string;
@@ -21,9 +22,9 @@ export interface Product {
 
 interface CartContextType {
   items: CartItem[];
-  updateItemQuantity: (productId: number, quantity: number) => void;
+  updateItemQuantity: (cartItemId: number, quantity: number) => void;
   addToCart: (product: Product) => void;
-  removeFromCart: (productId: number) => void;
+  removeFromCart: (cartItemId: number) => void;
   clearCart: () => void;
 }
 
@@ -35,29 +36,47 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const getUserFromLocalStorage = () => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+  const fetchCart = async () => {
+    if (user) {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/cart/${user.user_id}`
+        );
+        const cartItems = response.data.CartItems.map((item: any) => ({
+          cart_item_id: item.cart_item_id,
+          product_id: item.product_id,
+          name: item.Product.name,
+          image: item.Product.image,
+          price: item.Product.price,
+          quantity: item.quantity,
+        }));
+        setItems(cartItems);
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      }
+    } else {
+      setItems([]);
+    }
   };
 
   useEffect(() => {
-    // Fetch cart items from the API when the component mounts
-    const fetchCart = async () => {
-      const currentUser = user || getUserFromLocalStorage();
-      if (currentUser) {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/api/cart/${currentUser.user_id}`
-          );
-          setItems(response.data.CartItems || []);
-        } catch (error) {
-          console.error("Error fetching cart items:", error);
-        }
-      }
-    };
-
     fetchCart();
   }, [user]);
+
+  const saveCartToLocalStorage = (cartItems: CartItem[]) => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  };
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+      setItems(JSON.parse(storedCart));
+    }
+  }, []);
+
+  useEffect(() => {
+    saveCartToLocalStorage(items);
+  }, [items]);
 
   const handleError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -74,18 +93,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Adds product to cart or increments quantity if already present
   const addToCart = async (product: Product) => {
-    const currentUser = user || getUserFromLocalStorage();
-    if (!currentUser) return;
+    if (!user) return;
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/cart/add`, {
-        user_id: currentUser.user_id,
-        product_id: product.product_id,
-        quantity: 1,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/cart/add`,
+        {
+          user_id: user.user_id,
+          product_id: product.product_id,
+          quantity: 1,
+        }
+      );
+      const newCartItem = response.data;
       setItems((prevItems) => {
-        if (!prevItems) prevItems = [];
         const itemExists = prevItems.find(
           (item) => item.product_id === product.product_id
         );
@@ -96,51 +116,64 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
               : item
           );
         }
-        return [...prevItems, { ...product, quantity: 1 }];
+        return [
+          ...prevItems,
+          { ...product, quantity: 1, cart_item_id: newCartItem.cart_item_id },
+        ];
       });
     } catch (error) {
       handleError(error);
     }
   };
 
-  // Removes an item from the cart by product ID
-  const removeFromCart = async (productId: number) => {
-    const currentUser = user || getUserFromLocalStorage();
-    if (!currentUser) return;
+  const removeFromCart = async (cartItemId: number) => {
+    if (!user) return;
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/cart/remove/${productId}`
+        `${import.meta.env.VITE_API_URL}/api/cart/remove/${cartItemId}`
       );
       setItems((prevItems) =>
-        prevItems
-          ? prevItems.filter((item) => item.product_id !== productId)
-          : []
+        prevItems.filter((item) => item.cart_item_id !== cartItemId)
       );
     } catch (error) {
       handleError(error);
     }
   };
 
-  // Clears all items from the cart
-  const clearCart = () => {
-    setItems([]);
-    // Optional: Implement API call to clear cart items
-  };
-
-  const updateItemQuantity = async (productId: number, quantity: number) => {
-    if (quantity > 0) {
-      setItems((currentItems) =>
-        currentItems.map((item) =>
-          item.product_id === productId ? { ...item, quantity } : item
-        )
+  const clearCart = async () => {
+    if (!user) return;
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/cart/clear/${user.user_id}`
       );
-      // Optional: Implement API call to update item quantity
-    } else {
-      removeFromCart(productId);
+      setItems([]);
+      saveCartToLocalStorage([]);
+    } catch (error) {
+      handleError(error);
     }
   };
 
-  // Cart context provider that passes down the cart state and handlers
+  const updateItemQuantity = async (cartItemId: number, quantity: number) => {
+    if (!user) return;
+    if (quantity > 0) {
+      try {
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/cart/update`, {
+          cartItemId,
+          quantity,
+        });
+        setItems((currentItems) =>
+          currentItems.map((item) =>
+            item.cart_item_id === cartItemId ? { ...item, quantity } : item
+          )
+        );
+      } catch (error) {
+        handleError(error);
+      }
+    } else {
+      removeFromCart(cartItemId);
+    }
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -156,7 +189,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-// Custom hook to use the cart context
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

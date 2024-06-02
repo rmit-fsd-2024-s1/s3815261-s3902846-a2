@@ -1,39 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useCart } from "../hooks/useCart";
+import { useNavigate } from "react-router-dom";
 
 const Checkout: React.FC = () => {
   const { items, updateItemQuantity, removeFromCart, clearCart } = useCart();
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
+  const navigate = useNavigate();
+
+  // Debugging to check items state
+  useEffect(() => {
+    console.log("Cart items:", items);
+  }, [items]);
 
   const total = items.reduce(
-    (acc, item) => acc + Number(item.price) * item.quantity,
+    (acc, item) => acc + Number(item.price || 0) * item.quantity,
     0
   );
 
-  const validateCard = () => {
-    const regexCardNumber = /^4[0-9]{15}$/;
-    const regexExpiryDate = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
-
-    const isCardNumberValid = regexCardNumber.test(
-      cardNumber.replace(/\s+/g, "")
-    );
-    const isExpiryDateValid = regexExpiryDate.test(expiryDate);
-
-    return isCardNumberValid && isExpiryDateValid;
+  const handleClearCart = () => {
+    if (window.confirm("Are you sure you want to clear the cart?")) {
+      clearCart();
+    }
   };
 
-  const handleCheckout = () => {
-    if (validateCard()) {
-      alert(`Payment successful! Total: $${total.toFixed(2)}`);
-      clearCart();
-      setCardNumber("");
-      setExpiryDate("");
-    } else {
-      alert(
-        "Invalid Visa card details. Please check your card number and expiry date."
-      );
-    }
+  const handleProceedToPayment = () => {
+    navigate("/payment");
   };
 
   return (
@@ -55,14 +45,14 @@ const Checkout: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold">{item.name}</h3>
                   <p className="text-sm text-gray-600">
-                    ${Number(item.price).toFixed(2)} each
+                    ${Number(item.price || 0).toFixed(2)} each
                   </p>
                 </div>
               </div>
               <div className="flex items-center">
                 <button
                   onClick={() =>
-                    updateItemQuantity(item.product_id, item.quantity - 1)
+                    updateItemQuantity(item.cart_item_id, item.quantity - 1)
                   }
                   className="text-lg px-3 py-1 border rounded-l focus:outline-none focus:ring disabled:bg-gray-200"
                   disabled={item.quantity <= 1}
@@ -74,7 +64,7 @@ const Checkout: React.FC = () => {
                 </span>
                 <button
                   onClick={() =>
-                    updateItemQuantity(item.product_id, item.quantity + 1)
+                    updateItemQuantity(item.cart_item_id, item.quantity + 1)
                   }
                   className="text-lg px-3 py-1 border rounded-r focus:outline-none focus:ring"
                 >
@@ -82,10 +72,10 @@ const Checkout: React.FC = () => {
                 </button>
               </div>
               <span className="font-semibold">
-                ${(Number(item.price) * item.quantity).toFixed(2)}
+                ${(Number(item.price || 0) * item.quantity).toFixed(2)}
               </span>
               <button
-                onClick={() => removeFromCart(item.product_id)}
+                onClick={() => removeFromCart(item.cart_item_id)}
                 className="text-xs text-red-500 hover:text-red-600"
               >
                 Remove
@@ -102,27 +92,17 @@ const Checkout: React.FC = () => {
         )}
       </div>
       <div className="mt-8">
-        <div className="flex space-x-3 mb-4">
-          <input
-            type="text"
-            placeholder="Card Number"
-            value={cardNumber}
-            onChange={(e) => setCardNumber(e.target.value)}
-            className="flex-1 px-2 py-1 border rounded"
-          />
-          <input
-            type="text"
-            placeholder="Expiry Date (MM/YY)"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
-            className="px-2 py-1 border rounded"
-          />
-        </div>
         <button
-          onClick={handleCheckout}
-          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={handleProceedToPayment}
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
         >
-          Pay
+          Proceed to Payment
+        </button>
+        <button
+          onClick={handleClearCart}
+          className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Clear Cart
         </button>
       </div>
     </div>

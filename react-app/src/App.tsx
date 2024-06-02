@@ -10,8 +10,9 @@ import SignIn from "./components/auth/SignIn";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import ProductsComponent from "./components/Products";
-import ProductComments from "./components/ProductComments"; // Import ProductComments component
-import Checkout from "./components/Checkout"; // Make sure to import your Checkout component
+import ProductComments from "./components/ProductComments";
+import Checkout from "./components/Checkout";
+import Payment from "./components/Payment"; // Import the Payment component
 
 const App: React.FC = () => {
   return (
@@ -35,11 +36,11 @@ const App: React.FC = () => {
                   }
                 />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment" element={<Payment />} />
                 <Route
                   path="/product/:productId/comments"
                   element={<ProductComments />}
-                />{" "}
-                {/* Add this line */}
+                />
               </Routes>
             </main>
             <Footer />

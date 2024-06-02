@@ -137,6 +137,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setIsAuthenticated(false);
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("cart"); // Clear cart from local storage on sign out
   };
 
   return (

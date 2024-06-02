@@ -3,6 +3,9 @@ const db = require("../database");
 exports.createReview = async (req, res) => {
   try {
     const { user_id, product_id, rating, comment } = req.body;
+    if (comment && comment.split(" ").length > 100) {
+      return res.status(400).json({ error: "Comment cannot exceed 100 words" });
+    }
     const review = await db.Review.create({
       user_id,
       product_id,
@@ -39,6 +42,9 @@ exports.updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
+    if (comment && comment.split(" ").length > 100) {
+      return res.status(400).json({ error: "Comment cannot exceed 100 words" });
+    }
     const review = await db.Review.findByPk(reviewId);
     if (!review) {
       return res.status(404).json({ error: "Review not found" });

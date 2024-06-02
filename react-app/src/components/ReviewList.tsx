@@ -79,7 +79,9 @@ const ReviewList: React.FC<ReviewListProps> = ({
             />
           ) : (
             <div>
-              <p className="text-gray-700 mb-2">{review.comment}</p>
+              <p className="text-gray-700 mb-2 break-words whitespace-normal">
+                {review.comment}
+              </p>
               {user?.user_id === review.user_id && (
                 <div className="flex space-x-2">
                   <button

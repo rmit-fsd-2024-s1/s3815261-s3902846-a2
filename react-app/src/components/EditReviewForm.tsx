@@ -15,9 +15,15 @@ const EditReviewForm: React.FC<EditReviewFormProps> = ({
 }) => {
   const [rating, setRating] = useState(review.rating);
   const [comment, setComment] = useState(review.comment);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (comment.split(" ").length > 100) {
+      setError("Comment cannot exceed 100 words");
+      return;
+    }
 
     try {
       await axios.put(
@@ -31,6 +37,7 @@ const EditReviewForm: React.FC<EditReviewFormProps> = ({
       onEditCancel(); // Hide the form after saving changes
     } catch (error) {
       console.error("Error updating review:", error);
+      setError("Error updating review");
     }
   };
 
@@ -55,12 +62,13 @@ const EditReviewForm: React.FC<EditReviewFormProps> = ({
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="border rounded p-1 w-full"
+          className="border rounded p-1 w-full break-words whitespace-normal"
           rows={4}
           maxLength={500}
           placeholder="Write your review here..."
         />
       </div>
+      {error && <p className="text-red-500">{error}</p>}
       <div className="flex space-x-2">
         <button
           type="submit"

@@ -34,6 +34,13 @@ module.exports = (sequelize, DataTypes) => {
       comment: {
         type: DataTypes.STRING(500),
         allowNull: true,
+        validate: {
+          isLongEnough(value) {
+            if (value && value.split(" ").length > 100) {
+              throw new Error("Comment cannot exceed 100 words");
+            }
+          },
+        },
       },
     },
     {

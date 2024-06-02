@@ -14,11 +14,17 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 }) => {
   const [rating, setRating] = useState(1);
   const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    if (comment.split(" ").length > 100) {
+      setError("Comment cannot exceed 100 words");
+      return;
+    }
 
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/review`, {
@@ -29,9 +35,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       });
       setRating(1);
       setComment("");
+      setError("");
       onReviewSubmitted();
     } catch (error) {
       console.error("Error submitting review:", error);
+      setError("Error submitting review");
     }
   };
 
@@ -59,12 +67,13 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="border rounded p-1 w-full"
+          className="border rounded p-1 w-full break-words whitespace-normal"
           rows={4}
           maxLength={500}
           placeholder="Write your review here..."
         />
       </div>
+      {error && <p className="text-red-500">{error}</p>}
       <button
         type="submit"
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"

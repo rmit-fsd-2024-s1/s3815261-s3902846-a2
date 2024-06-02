@@ -34,6 +34,20 @@ const ProductComments: React.FC = () => {
     fetchProduct();
   }, [productId]);
 
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/reviews/${productId}`
+        );
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+
+    fetchReviews();
+  }, [productId, reviewSubmitted]);
+
   const handleReviewSubmitted = () => {
     setReviewSubmitted(!reviewSubmitted);
   };

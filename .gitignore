@@ -1,1 +1,2 @@
-.\react-app\node_modules\
+react-app/node_modules
+express-with-sequelize/node_modules

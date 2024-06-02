@@ -31,13 +31,23 @@ exports.addItemToCart = async (req, res) => {
   }
 };
 
-// View cart
+// View Cart
 exports.viewCart = async (req, res) => {
   try {
     const userId = req.params.userId;
     const cart = await db.Cart.findOne({
       where: { user_id: userId },
-      include: [{ model: db.CartItem, include: [db.Product] }],
+      include: [
+        {
+          model: db.CartItem,
+          include: [
+            {
+              model: db.Product,
+              attributes: ["product_id", "name", "image", "price"],
+            },
+          ],
+        },
+      ],
     });
 
     if (!cart) {
@@ -67,6 +77,45 @@ exports.removeItemFromCart = async (req, res) => {
     }
   } catch (error) {
     console.error("Error removing item from cart:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Clear cart
+exports.clearCart = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const cart = await db.Cart.findOne({ where: { user_id: userId } });
+    if (cart) {
+      await db.CartItem.destroy({ where: { cart_id: cart.cart_id } });
+      res.json({ message: "Cart cleared" });
+    } else {
+      res.status(404).json({ error: "Cart not found" });
+    }
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Update item quantity in cart
+exports.updateItemQuantity = async (req, res) => {
+  try {
+    const { cartItemId, quantity } = req.body;
+
+    const cartItem = await db.CartItem.findOne({
+      where: { cart_item_id: cartItemId },
+    });
+    if (cartItem) {
+      cartItem.quantity = quantity;
+      await cartItem.save();
+      res.json(cartItem);
+    } else {
+      res.status(404).json({ error: "Item not found" });
+    }
+  } catch (error) {
+    console.error("Error updating item quantity:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
